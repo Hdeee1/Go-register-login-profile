@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Hdeee1/go-register-login-profile/internal/domain"
@@ -32,7 +33,17 @@ func (u *userUsecase) Register(user domain.User) (*domain.User, error) {
 }
 
 func (u *userUsecase) Login(user domain.User) (*domain.User, error) {
-	return nil, nil
+	if err := u.userRepo.GetByEmail(&user); err != nil {
+		return nil, errors.New("email not found")
+	}
+
+	var User domain.User
+	hashedPass := User.Password
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPass), []byte(user.Password)); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (u *userUsecase) GetProfile() (*domain.User, error) {
