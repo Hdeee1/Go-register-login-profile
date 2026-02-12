@@ -32,7 +32,8 @@ func main() {
 
 	r := gin.Default()
 	r.POST("/api/user/register", h.Register)
+	r.POST("/api/user/login", h.Login)
 
 	fmt.Println("Server started at port :8080")
-	r.Run(":8080")
+	r.Run(":8081")
 }

@@ -34,8 +34,8 @@ func (m *mySQLUserRepository) Create(user *domain.User) error {
 }
 
 func (m *mySQLUserRepository) GetByEmail(user *domain.User) error {
-	query := "SELECT * FROM users WHERE email = ?"
-	row := m.db.QueryRow(query, user.Email)
+	query := "SELECT email FROM users WHERE email = ?"
+	row := m.db.QueryRow(query, &user.Email)
 	
 	if err := row.Scan(&user); err != nil {
 		return err

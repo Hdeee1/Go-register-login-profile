@@ -36,26 +36,26 @@ func (u *userUsecase) Register(user domain.User) (*domain.User, error) {
 }
 
 func (u *userUsecase) Login(user domain.User) (*domain.User, string, string, error) {
-	if err := u.userRepo.GetByEmail(&user); err != nil {
-		return nil, "", "", errors.New("email not found")
-	}
+	password := user.Password
 
-	var User domain.User
-	hashedPass := User.Password
-	if err := bcrypt.CompareHashAndPassword([]byte(hashedPass), []byte(user.Password)); err != nil {
-		return nil, "", "", err
+	if err := u.userRepo.GetByEmail(&user); err != nil {
+		return nil, "", "", errors.New("wrong email or password")
+	}
+	
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return nil, "", "", errors.New("wrong email or password")
 	}
 
 	accessKey := os.Getenv("JWT_ACCESS_SECRET")
 	accessToken, err := jwt.GenerateToken(user.Id, accessKey, 1 * time.Hour)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", errors.New("wrong email or password")
 	}
 
 	refreshKey := os.Getenv("JWT_REFRESH_SECRET")
 	refreshToken, err := jwt.GenerateToken(user.Id, refreshKey, 24 * time.Hour)
 	if err != nil {
-		return nil, "", "", err
+		return nil, "", "", errors.New("wrong email or password")
 	}
 
 	return &user, accessToken, refreshToken, nil

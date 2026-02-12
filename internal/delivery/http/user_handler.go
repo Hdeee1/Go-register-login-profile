@@ -12,7 +12,7 @@ type UserHandler struct {
 }
 
 type loginResponse struct {
-	user 		 domain.User
+	User 		 domain.User
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
@@ -42,7 +42,7 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	var newUser domain.User
 
 	if err := ctx.ShouldBindJSON(&newUser); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -53,7 +53,7 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	}
 
 	res := loginResponse{
-		user: *usr,
+		User: *usr,
 		AccessToken: accTkn,
 		RefreshToken: refTkn,
 	}
