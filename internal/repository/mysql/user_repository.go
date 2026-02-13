@@ -21,16 +21,13 @@ func (m *mySQLUserRepository) Create(user *domain.User, ctx context.Context) err
 	if err != nil {
 		return err
 	}
-	
-	rows, err := res.LastInsertId()
+
+	id, err := res.LastInsertId()
 	if err != nil {
 		return err
 	}
 
-	if rows != 1 {
-		return err
-	}
-
+	user.Id = int(id)	
 	return nil
 }
 

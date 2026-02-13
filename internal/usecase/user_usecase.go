@@ -54,19 +54,19 @@ func (u *userUsecase) Login(input domain.LoginRequest, ctx context.Context) (*do
 	}
 	
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return nil, "", "", errors.New("wrong email or password")
+		return nil, "", "", errors.New("wrong password")
 	}
 
 	accessKey := os.Getenv("JWT_ACCESS_SECRET")
 	accessToken, err := jwt.GenerateToken(user.Id, accessKey, 1 * time.Hour)
 	if err != nil {
-		return nil, "", "", errors.New("wrong email or password")
+		return nil, "", "", errors.New("failed to generate token")
 	}
 
 	refreshKey := os.Getenv("JWT_REFRESH_SECRET")
 	refreshToken, err := jwt.GenerateToken(user.Id, refreshKey, 24 * time.Hour)
 	if err != nil {
-		return nil, "", "", errors.New("wrong email or password")
+		return nil, "", "", errors.New("failed to generate token")
 	}
 
 	return &user, accessToken, refreshToken, nil

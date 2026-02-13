@@ -33,13 +33,13 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 	var newUser domain.RegisterRequest
 
 	if err := ctx.ShouldBindJSON(&newUser); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	user, err := h.userUseCase.Register(newUser, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -57,13 +57,13 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	var newUser domain.LoginRequest
 
 	if err := ctx.ShouldBindJSON(&newUser); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	usr, accTkn, refTkn, err := h.userUseCase.Login(newUser, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -80,7 +80,7 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 func (h *UserHandler) GetProfile(ctx *gin.Context) {
 	value, exist := ctx.Get("user_id")
 	if !exist {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 
@@ -88,9 +88,9 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 
 	user, err := h.userUseCase.GetProfile(userId, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "not found"})
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"user": user})
+	ctx.JSON(http.StatusOK, gin.H{"data": user})
 }
