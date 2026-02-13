@@ -26,7 +26,10 @@ func ConnectMySQL() (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to connect to database, error: %v", err.Error())
 	}
-	db.Ping()
+
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
 	
 	return db, nil
 }

@@ -21,7 +21,7 @@ func (m *mySQLUserRepository) Create(user *domain.User) error {
 		return err
 	}
 	
-	rows, err := res.RowsAffected()
+	rows, err := res.LastInsertId()
 	if err != nil {
 		return err
 	}

@@ -38,13 +38,13 @@ func main() {
 		api.POST("/user/register", h.Register)
 		api.POST("/user/login", h.Login)
 
-		auth := r.Group("/auth")
+		auth := api.Group("/auth")
 		auth.Use(middleware.AuthMiddleware(os.Getenv("JWT_ACCESS_SECRET")))
 		{
-			r.GET("/profile")
+			auth.GET("/profile", h.GetProfile)
 		}
 	}
 
 	fmt.Println("Server started at port :8080")
-	r.Run(":8081")
+	r.Run(":8080")
 }
