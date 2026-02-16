@@ -103,5 +103,5 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 		},
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": res})
+	ctx.JSON(http.StatusOK, res)
 }
