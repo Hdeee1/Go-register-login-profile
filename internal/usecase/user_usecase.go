@@ -9,6 +9,7 @@ import (
 
 	"github.com/Hdeee1/go-register-login-profile/internal/domain"
 	"github.com/Hdeee1/go-register-login-profile/pkg/jwt"
+	"github.com/Hdeee1/go-register-login-profile/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -22,6 +23,10 @@ func NewUserUsecase(r domain.UserRepository) domain.UserUsecase {
 }
 
 func (u *userUsecase) Register(input domain.RegisterRequest, ctx context.Context) (*domain.User, error) {
+	if err := utils.ValidatePassword(input.Password); err != nil {
+		return nil, err
+	}
+	
 	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
