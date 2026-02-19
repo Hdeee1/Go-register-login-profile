@@ -62,7 +62,7 @@ func (u *userUsecase) Login(input domain.LoginRequest, ctx context.Context) (*do
 		return nil, "", "", errors.New("wrong email or password")
 	}
 
-	accessKey := os.Getenv("JWT_REFRESH_SECRET")
+	accessKey := os.Getenv("JWT_ACCESS_SECRET")
 	accessToken, err := jwt.GenerateToken(user.Id, accessKey, 1 * time.Hour)
 	if err != nil {
 		return nil, "", "", errors.New("failed to generate token")
@@ -86,7 +86,7 @@ func (u *userUsecase) Refresh(input domain.RefreshTokenRequest, ctx context.Cont
 		return "", errors.New("invalid token")
 	}
 
-	accessKey := os.Getenv("JWT_REFRESH_SECRET")
+	accessKey := os.Getenv("JWT_ACCESS_SECRET")
 	tokenString, err := jwt.GenerateToken(claims.UserId, accessKey, time.Hour)
 	if err != nil {
 		return "", err
