@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+
 	// "time"
 
 	"github.com/Hdeee1/go-register-login-profile/internal/delivery/http"
@@ -11,6 +12,7 @@ import (
 	repository "github.com/Hdeee1/go-register-login-profile/internal/repository/mysql"
 	"github.com/Hdeee1/go-register-login-profile/internal/usecase"
 	"github.com/Hdeee1/go-register-login-profile/pkg/database"
+	"github.com/Hdeee1/go-register-login-profile/pkg/jwt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -33,7 +35,8 @@ func main() {
 	}
 
 	useCase := usecase.NewUserUsecase(repo)
-	h := http.NewUserHandler(useCase)
+	blackList := jwt.NewTokenBlacklist()
+	h := http.NewUserHandler(useCase, blackList)
 
 	rateLimiter := middleware.NewIPRateLimiter(1, 5)
 
@@ -56,6 +59,7 @@ func main() {
 		auth.Use(middleware.AuthMiddleware(os.Getenv("JWT_ACCESS_SECRET")))
 		{
 			auth.GET("/profile", h.GetProfile)
+			auth.POST("/logout", h.Logout)
 		}
 	}
 

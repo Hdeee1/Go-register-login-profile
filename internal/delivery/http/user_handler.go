@@ -2,13 +2,17 @@ package http
 
 import (
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/Hdeee1/go-register-login-profile/internal/domain"
+	"github.com/Hdeee1/go-register-login-profile/pkg/jwt"
 	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {
 	userUseCase domain.UserUsecase
+	tokenBlacklist *jwt.TokenBlacklist
 }
 
 type registerResponse struct {
@@ -25,8 +29,11 @@ type loginResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func NewUserHandler(u domain.UserUsecase) *UserHandler {
-	return &UserHandler{userUseCase: u}
+func NewUserHandler(u domain.UserUsecase, b *jwt.TokenBlacklist) *UserHandler {
+	return &UserHandler{
+		userUseCase: u,
+		tokenBlacklist: b,
+	}
 }
 
 func (h *UserHandler) Register(ctx *gin.Context) {
@@ -75,6 +82,30 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"data": res})
+}
+
+func (h *UserHandler) Logout(ctx *gin.Context) {
+	authHeader := ctx.GetHeader("Authorization")
+	if authHeader == "" {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Auth header is required"})
+		return 
+	}
+
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization format"})
+		return 
+	}
+
+	tokenString := parts[1]
+
+	claims, err := jwt.ValidateToken(tokenString, os.Getenv("JWT_ACCESS_SECRET"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		return 
+	}
+
+	h.tokenBlacklist.AddTokenBlacklist(tokenString, claims.ExpiresAt.Time)
 }
 
 func (h *UserHandler) GetProfile(ctx *gin.Context) {

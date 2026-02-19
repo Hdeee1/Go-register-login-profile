@@ -35,7 +35,6 @@ func (limiter *IPRateLimiter) getLimiter(ip string) *rate.Limiter {
 	}
 
 	limiter.mu.RUnlock()
-
 	return limit
 }
 
