@@ -16,7 +16,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	// "golang.org/x/time/rate"
 )
 
 func main() {

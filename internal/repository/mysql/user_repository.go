@@ -33,7 +33,7 @@ func (m *mySQLUserRepository) Create(user *domain.User, ctx context.Context) err
 
 func (m *mySQLUserRepository) GetByEmail(user *domain.User, ctx context.Context) error {
 	query := "SELECT id, full_name, username, email, password, created_at, updated_at FROM users WHERE email = ?"
-	row := m.db.QueryRow(query, &user.Email)
+	row := m.db.QueryRow(query, user.Email)
 	
 	if err := row.Scan(
 			&user.Id, 
