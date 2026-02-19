@@ -56,7 +56,7 @@ func main() {
 		api.POST("/user/login", h.Login)
 
 		auth := api.Group("/auth")
-		auth.Use(middleware.AuthMiddleware(os.Getenv("JWT_ACCESS_SECRET")))
+		auth.Use(middleware.AuthMiddleware(os.Getenv("JWT_ACCESS_SECRET"), blackList))
 		{
 			auth.GET("/profile", h.GetProfile)
 			auth.POST("/logout", h.Logout)

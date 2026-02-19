@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthMiddleware(secretKey string) gin.HandlerFunc {
+func AuthMiddleware(secretKey string, blacklist *jwt.TokenBlacklist) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		if authHeader == "" {
@@ -23,6 +23,12 @@ func AuthMiddleware(secretKey string) gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
+
+		isBlacklist := blacklist.IsBlacklisted(tokenString)
+		if isBlacklist == true {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Token has been invalidated")
+			return 
+		}
 
 		claims, err := jwt.ValidateToken(tokenString, secretKey)
 		if err != nil {
