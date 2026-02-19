@@ -29,6 +29,10 @@ type LoginRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
 type UserRepository interface {
 	Create(user *User, ctx context.Context) error
 	GetByEmail(user *User, ctx context.Context) error
@@ -39,4 +43,5 @@ type UserUsecase interface {
 	Register(user RegisterRequest, ctx context.Context) (*User, error)
 	Login(user LoginRequest, ctx context.Context) (*User, string, string, error)
 	GetProfile(userId int, ctx context.Context) (*User, error)
+	Refresh(input RefreshTokenRequest, ctx context.Context) (string, error)
 }

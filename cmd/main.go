@@ -53,6 +53,7 @@ func main() {
 	{
 		api.POST("/user/register", h.Register)
 		api.POST("/user/login", h.Login)
+		api.POST("/auth/refresh", h.Refresh)
 
 		auth := api.Group("/auth")
 		auth.Use(middleware.AuthMiddleware(os.Getenv("JWT_ACCESS_SECRET"), blackList))

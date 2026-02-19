@@ -108,6 +108,23 @@ func (h *UserHandler) Logout(ctx *gin.Context) {
 	h.tokenBlacklist.AddTokenBlacklist(tokenString, claims.ExpiresAt.Time)
 }
 
+func (h *UserHandler) Refresh(ctx *gin.Context) {
+	var refresh domain.RefreshTokenRequest
+
+	if err := ctx.ShouldBindJSON(&refresh); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ref, err := h.userUseCase.Refresh(refresh, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON( http.StatusOK, gin.H{"access_token": ref})
+}
+
 func (h *UserHandler) GetProfile(ctx *gin.Context) {
 	value, exist := ctx.Get("user_id")
 	if !exist {

@@ -62,12 +62,12 @@ func (u *userUsecase) Login(input domain.LoginRequest, ctx context.Context) (*do
 		return nil, "", "", errors.New("wrong email or password")
 	}
 
-	accessKey := os.Getenv("JWT_ACCESS_SECRET")
+	accessKey := os.Getenv("JWT_REFRESH_SECRET")
 	accessToken, err := jwt.GenerateToken(user.Id, accessKey, 1 * time.Hour)
 	if err != nil {
 		return nil, "", "", errors.New("failed to generate token")
 	}
-
+	
 	refreshKey := os.Getenv("JWT_REFRESH_SECRET")
 	refreshToken, err := jwt.GenerateToken(user.Id, refreshKey, 24 * time.Hour)
 	if err != nil {
@@ -75,6 +75,24 @@ func (u *userUsecase) Login(input domain.LoginRequest, ctx context.Context) (*do
 	}
 
 	return &user, accessToken, refreshToken, nil
+}
+
+func (u *userUsecase) Refresh(input domain.RefreshTokenRequest, ctx context.Context) (string, error) {
+	refreshToken := input.RefreshToken
+
+	refreshKey := os.Getenv("JWT_REFRESH_SECRET")
+	claims, err := jwt.ValidateToken(refreshToken, refreshKey)
+	if err != nil {
+		return "", errors.New("invalid token")
+	}
+
+	accessKey := os.Getenv("JWT_REFRESH_SECRET")
+	tokenString, err := jwt.GenerateToken(claims.UserId, accessKey, time.Hour)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
 
 func (u *userUsecase) GetProfile(userId int, ctx context.Context) (*domain.User, error) {
