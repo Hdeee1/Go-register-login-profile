@@ -7,6 +7,8 @@ import (
 
 	"github.com/Hdeee1/go-register-login-profile/internal/domain"
 	"github.com/Hdeee1/go-register-login-profile/pkg/jwt"
+	"github.com/Hdeee1/go-register-login-profile/pkg/response"
+	"github.com/Hdeee1/go-register-login-profile/pkg/validator"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,13 +42,13 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 	var newUser domain.RegisterRequest
 
 	if err := ctx.ShouldBindJSON(&newUser); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
 		return
 	}
 
 	user, err := h.userUseCase.Register(newUser, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
 		return
 	}
 
@@ -57,20 +59,20 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 		Email: user.Email,
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"data": res})
+	ctx.JSON(http.StatusCreated, response.BuildSuccessResponse("CREATED", res))
 }
 
 func (h *UserHandler) Login(ctx *gin.Context) {
 	var newUser domain.LoginRequest
 
 	if err := ctx.ShouldBindJSON(&newUser); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
 		return
 	}
 
 	usr, accTkn, refTkn, err := h.userUseCase.Login(newUser, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, response.BuildErrorResponse("UNAUTHORIZED", validator.ParseValidatorError(err)))
 		return
 	}
 
@@ -81,7 +83,7 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 		RefreshToken: refTkn,
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"data": res})
+	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("OK", res))
 }
 
 func (h *UserHandler) Logout(ctx *gin.Context) {
@@ -106,23 +108,24 @@ func (h *UserHandler) Logout(ctx *gin.Context) {
 	}
 
 	h.tokenBlacklist.AddTokenBlacklist(tokenString, claims.ExpiresAt.Time)
+	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("OK", gin.H{"message": "logged out"}))
 }
 
 func (h *UserHandler) Refresh(ctx *gin.Context) {
 	var refresh domain.RefreshTokenRequest
 
 	if err := ctx.ShouldBindJSON(&refresh); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
 		return
 	}
 
 	ref, err := h.userUseCase.Refresh(refresh, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, response.BuildErrorResponse("UNAUTHORIZED", validator.ParseValidatorError(err)))
 		return
 	}
 
-	ctx.JSON( http.StatusOK, gin.H{"access_token": ref})
+	ctx.JSON( http.StatusOK, response.BuildSuccessResponse("OK", gin.H{"access_token": ref}))
 }
 
 func (h *UserHandler) GetProfile(ctx *gin.Context) {
@@ -136,20 +139,18 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 
 	user, err := h.userUseCase.GetProfile(userId, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		ctx.JSON(http.StatusNotFound, response.BuildErrorResponse("NOT_FOUND", validator.ParseValidatorError(err)))
 		return
 	}
 
 	res := gin.H{
-		"data": gin.H{
 			"id": user.Id,
 			"full_name": user.FullName,
 			"username": user.Username,
 			"email": user.Email,
 			"created_at": user.CreatedAt,
 			"updated_at": user.UpdatedAt,
-		},
 	}
 
-	ctx.JSON(http.StatusOK, res)
+	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("OK", res))
 }
