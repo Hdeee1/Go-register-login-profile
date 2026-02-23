@@ -23,6 +23,17 @@ func NewUserUsecase(r domain.UserRepository) domain.UserUsecase {
 }
 
 func (u *userUsecase) Register(input domain.RegisterRequest, ctx context.Context) (*domain.User, error) {
+	data, err := u.userRepo.FindByEmailOrUsername(input.Email, input.Username)
+	if err == nil && data != nil {
+		if data.Email == input.Email {
+			return nil, err
+		}
+		if data.Username == input.Username {
+			return nil, err
+		}
+	}
+
+
 	if err := utils.ValidatePassword(input.Password); err != nil {
 		return nil, err
 	}

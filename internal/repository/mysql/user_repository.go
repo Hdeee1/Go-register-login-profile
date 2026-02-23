@@ -70,3 +70,24 @@ func (m *mySQLUserRepository) GetById(id int) (*domain.User, error) {
 
 	return &user, nil
 }
+
+func (m *mySQLUserRepository) FindByEmailOrUsername(email, username string) (*domain.User, error) {
+	query := "SELECT id, full_name, username, email, password, created_at, updated_at FROM users WHERE email = ? OR username = ?"
+	row := m.db.QueryRow(query, email, username)
+
+	var user domain.User
+
+	if err := row.Scan(
+			&user.Id, 
+			&user.FullName, 
+			&user.Username, 
+			&user.Email, 
+			&user.Password, 
+			&user.CreatedAt, 
+			&user.UpdatedAt,
+	); err != nil {
+		return  nil, err
+	}
+
+	return &user, nil
+}

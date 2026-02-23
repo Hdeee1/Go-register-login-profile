@@ -37,6 +37,7 @@ type UserRepository interface {
 	Create(user *User, ctx context.Context) error
 	GetByEmail(user *User, ctx context.Context) error
 	GetById(id int) (*User, error)
+	FindByEmailOrUsername(email, username string) (*User, error)
 }
 
 type UserUsecase interface {

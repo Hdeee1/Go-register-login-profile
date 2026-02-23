@@ -48,7 +48,7 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 
 	user, err := h.userUseCase.Register(newUser, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", err.Error()))
 		return
 	}
 
