@@ -91,3 +91,13 @@ func (m *mySQLUserRepository) FindByEmailOrUsername(email, username string) (*do
 
 	return &user, nil
 }
+
+func (m *mySQLUserRepository) Update(user *domain.User, ctx context.Context) error {
+	query := "UPDATE users SET username = ? password = ? WHERE id = ?"
+	_, err := m.db.Exec(query, user.Username, user.Password, user.Id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+} 

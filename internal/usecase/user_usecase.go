@@ -113,3 +113,32 @@ func (u *userUsecase) GetProfile(userId int, ctx context.Context) (*domain.User,
 	
 	return user, nil
 }
+
+func (u *userUsecase) UpdateProfile(userId int, input domain.UpdateProfileRequest, ctx context.Context) (*domain.User, error) {
+	if err := utils.ValidatePassword(input.Password); err != nil {
+		return nil, err
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	input.Password = string(hash)
+
+	var user domain.User
+
+	user.Id = userId
+	user.Password = input.Password
+	user.Username = input.Username
+
+	if err := u.userRepo.Update(&user, ctx); err != nil {
+		return nil, fmt.Errorf("failed to update user, error: %w", err)
+	}
+
+	updateUser, err := u.GetProfile(userId, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return updateUser, nil
+}

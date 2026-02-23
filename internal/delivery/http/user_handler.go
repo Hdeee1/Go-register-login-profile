@@ -154,3 +154,28 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("OK", res))
 }
+
+func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
+	value, exist := ctx.Get("user_id")
+	if !exist {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	userId := value.(int)
+
+	var updateUser domain.UpdateProfileRequest
+
+	if err := ctx.ShouldBindJSON(updateUser); err != nil {
+		ctx.JSON(http.StatusForbidden, response.BuildErrorResponse("FORBIDDEN", validator.ParseValidatorError(err)))
+		return
+	}
+
+	updatedUser, err := h.userUseCase.UpdateProfile(userId, updateUser, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("OK", &updatedUser))
+}

@@ -59,6 +59,7 @@ func main() {
 		auth.Use(middleware.AuthMiddleware(os.Getenv("JWT_ACCESS_SECRET"), blackList))
 		{
 			auth.GET("/profile", h.GetProfile)
+			auth.PUT("/profile", h.UpdateProfile)
 			auth.POST("/logout", h.Logout)
 		}
 	}
