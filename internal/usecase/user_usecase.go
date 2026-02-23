@@ -26,13 +26,12 @@ func (u *userUsecase) Register(input domain.RegisterRequest, ctx context.Context
 	data, err := u.userRepo.FindByEmailOrUsername(input.Email, input.Username)
 	if err == nil && data != nil {
 		if data.Email == input.Email {
-			return nil, err
+			return nil, errors.New("email already registered")
 		}
 		if data.Username == input.Username {
-			return nil, err
+			return nil, errors.New("username already taken")
 		}
 	}
-
 
 	if err := utils.ValidatePassword(input.Password); err != nil {
 		return nil, err

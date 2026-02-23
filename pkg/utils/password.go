@@ -13,7 +13,7 @@ func ValidatePassword(password string) error {
 		hasNumber	= false
 	)
 
-	if len(password) != 8 {
+	if len(password) >= 8 {
 		hasMinLen = true
 	}
 
