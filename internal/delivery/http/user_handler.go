@@ -165,15 +165,18 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	userId := value.(int)
 
 	var updateUser domain.UpdateProfileRequest
-
-	if err := ctx.ShouldBindJSON(updateUser); err != nil {
-		ctx.JSON(http.StatusForbidden, response.BuildErrorResponse("FORBIDDEN", validator.ParseValidatorError(err)))
+	if err := ctx.ShouldBindJSON(&updateUser); err != nil {
+		ctx.JSON(http.StatusForbidden, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
 		return
 	}
 
 	updatedUser, err := h.userUseCase.UpdateProfile(userId, updateUser, ctx)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
+		if err.Error() == "no fields to update" {
+			ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", err.Error()))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, response.BuildErrorResponse("INTERNAL_SERVER_ERROR", err.Error()))
 		return
 	}
 

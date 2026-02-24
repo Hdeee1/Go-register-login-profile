@@ -115,15 +115,20 @@ func (u *userUsecase) GetProfile(userId int, ctx context.Context) (*domain.User,
 }
 
 func (u *userUsecase) UpdateProfile(userId int, input domain.UpdateProfileRequest, ctx context.Context) (*domain.User, error) {
-	if err := utils.ValidatePassword(input.Password); err != nil {
-		return nil, err
+	if input.Password == "" && input.Username == "" {
+		return nil, errors.New("no field to update")
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
+	if input.Password != "" {
+		if err := utils.ValidatePassword(input.Password); err != nil {
+			return nil, err
+		}
+		hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, err
+		}
+		input.Password = string(hash)
 	}
-	input.Password = string(hash)
 
 	var user domain.User
 

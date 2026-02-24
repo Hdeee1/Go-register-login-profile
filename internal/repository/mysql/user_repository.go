@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"strings"
 
 	"github.com/Hdeee1/go-register-login-profile/internal/domain"
 )
@@ -93,8 +95,27 @@ func (m *mySQLUserRepository) FindByEmailOrUsername(email, username string) (*do
 }
 
 func (m *mySQLUserRepository) Update(user *domain.User, ctx context.Context) error {
-	query := "UPDATE users SET username = ? password = ? WHERE id = ?"
-	_, err := m.db.Exec(query, user.Username, user.Password, user.Id)
+	fields := []string{}
+	args := []any{}
+
+	if user.Username != "" {
+		fields = append(fields, "username = ?")
+		args = append(args, user.Username)
+	}
+
+	if user.Password != "" {
+		fields = append(fields, "password = ?")
+		args = append(args, user.Password)
+	}
+
+	if len(fields) == 0 {
+		return errors.New("no fields to update")
+	}
+
+	args = append(args, user.Id)
+	query := "UPDATE users SET " + strings.Join(fields, ", ") + " WHERE id = ?"
+
+	_, err := m.db.Exec(query, args...)
 	if err != nil {
 		return err
 	}

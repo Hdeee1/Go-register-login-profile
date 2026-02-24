@@ -30,8 +30,8 @@ type LoginRequest struct {
 }
 
 type UpdateProfileRequest struct {
-	Username	string	`json:"username" binding:"required,min=3"`
-	Password	string	`json:"password" binding:"required,min=8"`
+	Username	string	`json:"username"`
+	Password	string	`json:"password"`
 }
 
 type RefreshTokenRequest struct {
