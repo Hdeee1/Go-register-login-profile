@@ -54,6 +54,8 @@ func main() {
 		api.POST("/user/register", h.Register)
 		api.POST("/user/login", h.Login)
 		api.POST("/auth/refresh", h.Refresh)
+		api.POST("/auth/forgot-password", h.ForgotPassword)
+		api.POST("/auth/reset-password", h.ResetPassword)
 
 		auth := api.Group("/auth")
 		auth.Use(middleware.AuthMiddleware(os.Getenv("JWT_ACCESS_SECRET"), blackList))

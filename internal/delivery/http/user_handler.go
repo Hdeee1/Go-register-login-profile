@@ -182,3 +182,32 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("OK", &updatedUser))
 }
+
+func (h *UserHandler) ForgotPassword(ctx *gin.Context) {
+	var forgotPass domain.ForgotPasswordRequest
+	if err := ctx.ShouldBindJSON(&forgotPass); err != nil {
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", validator.ParseValidatorError(err)))
+		return
+	}
+
+	if err := h.userUseCase.ForgotPassword(forgotPass, ctx); err != nil {
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("otp code has been send to your email", nil))
+}
+
+func (h *UserHandler) ResetPassword(ctx *gin.Context) {
+	var reset domain.ResetPasswordRequest
+	if err := ctx.ShouldBindJSON(&reset); err != nil {
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", err.Error()))
+		return 
+	}
+
+	if err := h.userUseCase.ResetPassword(reset, ctx); err != nil {
+		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", err.Error()))
+		return
+	}
+	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("password has been changed", nil))
+}

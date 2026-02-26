@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/Hdeee1/go-register-login-profile/internal/domain"
@@ -146,4 +148,63 @@ func (u *userUsecase) UpdateProfile(userId int, input domain.UpdateProfileReques
 	}
 
 	return updateUser, nil
+}
+
+func (u *userUsecase) ForgotPassword(input domain.ForgotPasswordRequest, ctx context.Context) error {
+	var user domain.User
+	user.Email = input.Email
+
+	if err := u.userRepo.GetByEmail(&user, ctx); err != nil {
+		return errors.New("user not found")
+	}
+
+	rand := rand.Intn(1000000)
+	otp := strconv.Itoa(rand)
+	exp := time.Now().Add(5 * time.Minute)
+
+	if err := u.userRepo.SaveOTP(input.Email, otp, exp, ctx); err != nil {
+		return err
+	}
+
+	fmt.Printf("otp code for %s is %s", input.Email, otp)
+	return nil
+}
+
+func (u *userUsecase) ResetPassword(input domain.ResetPasswordRequest, ctx context.Context) error {
+	otp, exp, err := u.userRepo.FindOTP(input.Email, ctx)
+	if err != nil {
+		return err
+	}
+
+	if otp != input.OTP {
+		return errors.New("invalid otp code")
+	}
+
+	if time.Now().After(exp) {
+		return errors.New("token has been expired")
+	}
+
+	var user domain.User
+	user.Email = input.Email
+	if err := u.userRepo.GetByEmail(&user, ctx); err != nil {
+		return err
+	}
+
+	if err := utils.ValidatePassword(input.NewPassword); err != nil {
+		return err
+	}
+	
+	hash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	input.NewPassword = string(hash)
+	user.Password = input.NewPassword
+
+	if err := u.userRepo.Update(&user, ctx); err != nil {
+		return err
+	}
+
+	return nil
 }

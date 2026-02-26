@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/Hdeee1/go-register-login-profile/internal/domain"
 )
@@ -122,3 +123,30 @@ func (m *mySQLUserRepository) Update(user *domain.User, ctx context.Context) err
 
 	return nil
 } 
+
+func (m *mySQLUserRepository) SaveOTP(email, otp string, expiresAt time.Time, ctx context.Context) error {
+	query := "INSERT INTO password_resets (email, otp, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE otp = ?, expires_at = ?"
+	_, err := m.db.Exec(query, email, otp, expiresAt, otp, expiresAt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *mySQLUserRepository) FindOTP(email string, ctx context.Context) (string, time.Time, error) {
+	query := "SELECT otp, expires_at FROM password_resets WHERE email = ?"
+	row := m.db.QueryRow(query, email)
+
+	var otp string 
+	var expires time.Time
+	
+	if err := row.Scan(
+		&otp,
+		&expires,
+	); err != nil {
+		return "", time.Time{}, err
+	}
+
+	return otp, expires, nil
+}

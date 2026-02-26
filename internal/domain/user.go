@@ -38,12 +38,24 @@ type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
+type ForgotPasswordRequest struct {
+	Email	string	`json:"email" binding:"required,email"`
+}
+
+type ResetPasswordRequest struct {
+	Email		string	`json:"email" binding:"required,email"`
+	OTP			string	`json:"otp_code" binding:"required"`
+	NewPassword	string	`json:"new_password" binding:"required,min=8"`
+}
+
 type UserRepository interface {
 	Create(user *User, ctx context.Context) error
 	GetByEmail(user *User, ctx context.Context) error
 	GetById(id int) (*User, error)
 	FindByEmailOrUsername(email, username string) (*User, error)
 	Update(user *User, ctx context.Context) error
+	SaveOTP(email, otp string, expiresAt time.Time, ctx context.Context) error
+	FindOTP(email string, ctx context.Context) (string, time.Time, error)
 }
 
 type UserUsecase interface {
@@ -52,4 +64,6 @@ type UserUsecase interface {
 	GetProfile(userId int, ctx context.Context) (*User, error)
 	Refresh(input RefreshTokenRequest, ctx context.Context) (string, error)
 	UpdateProfile(userId int, input UpdateProfileRequest, ctx context.Context) (*User, error)
+	ForgotPassword(input ForgotPasswordRequest, ctx context.Context) error
+	ResetPassword(input ResetPasswordRequest, ctx context.Context) error
 }
