@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/Hdeee1/go-register-login-profile/internal/domain"
@@ -14,7 +13,6 @@ import (
 	"github.com/Hdeee1/go-register-login-profile/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
 )
-
 
 type userUsecase struct {
 	userRepo domain.UserRepository
@@ -38,7 +36,7 @@ func (u *userUsecase) Register(input domain.RegisterRequest, ctx context.Context
 	if err := utils.ValidatePassword(input.Password); err != nil {
 		return nil, err
 	}
-	
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -53,7 +51,7 @@ func (u *userUsecase) Register(input domain.RegisterRequest, ctx context.Context
 	user.Password = input.Password
 
 	if err := u.userRepo.Create(&user, ctx); err != nil {
-		return  nil, fmt.Errorf("failed to create user, error: %w", err)
+		return nil, fmt.Errorf("failed to create user, error: %w", err)
 	}
 
 	return &user, nil
@@ -65,23 +63,23 @@ func (u *userUsecase) Login(input domain.LoginRequest, ctx context.Context) (*do
 	var user domain.User
 	user.Email = input.Email
 	user.Password = input.Password
-	
+
 	if err := u.userRepo.GetByEmail(&user, ctx); err != nil {
 		return nil, "", "", errors.New("wrong email or password")
 	}
-	
+
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return nil, "", "", errors.New("wrong email or password")
 	}
 
 	accessKey := os.Getenv("JWT_ACCESS_SECRET")
-	accessToken, err := jwt.GenerateToken(user.Id, accessKey, 1 * time.Hour)
+	accessToken, err := jwt.GenerateToken(user.Id, accessKey, 1*time.Hour)
 	if err != nil {
 		return nil, "", "", errors.New("failed to generate token")
 	}
-	
+
 	refreshKey := os.Getenv("JWT_REFRESH_SECRET")
-	refreshToken, err := jwt.GenerateToken(user.Id, refreshKey, 24 * time.Hour)
+	refreshToken, err := jwt.GenerateToken(user.Id, refreshKey, 24*time.Hour)
 	if err != nil {
 		return nil, "", "", errors.New("failed to generate token")
 	}
@@ -112,7 +110,7 @@ func (u *userUsecase) GetProfile(userId int, ctx context.Context) (*domain.User,
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return user, nil
 }
 
@@ -158,15 +156,15 @@ func (u *userUsecase) ForgotPassword(input domain.ForgotPasswordRequest, ctx con
 		return errors.New("user not found")
 	}
 
-	rand := rand.Intn(1000000)
-	otp := strconv.Itoa(rand)
+	randNum := rand.Intn(1000000)
+	otp := fmt.Sprintf("%06d", randNum)
 	exp := time.Now().Add(5 * time.Minute)
 
 	if err := u.userRepo.SaveOTP(input.Email, otp, exp, ctx); err != nil {
 		return err
 	}
 
-	fmt.Printf("otp code for %s is %s", input.Email, otp)
+	fmt.Println("otp for", input.Email, "is", otp)
 	return nil
 }
 
@@ -193,18 +191,19 @@ func (u *userUsecase) ResetPassword(input domain.ResetPasswordRequest, ctx conte
 	if err := utils.ValidatePassword(input.NewPassword); err != nil {
 		return err
 	}
-	
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	input.NewPassword = string(hash)
-	user.Password = input.NewPassword
+	user.Password = string(hash)
 
 	if err := u.userRepo.Update(&user, ctx); err != nil {
 		return err
 	}
+
+	u.userRepo.DeleteOTP(input.Email, ctx)
 
 	return nil
 }

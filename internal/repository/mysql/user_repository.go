@@ -30,26 +30,26 @@ func (m *mySQLUserRepository) Create(user *domain.User, ctx context.Context) err
 		return err
 	}
 
-	user.Id = int(id)	
+	user.Id = int(id)
 	return nil
 }
 
 func (m *mySQLUserRepository) GetByEmail(user *domain.User, ctx context.Context) error {
 	query := "SELECT id, full_name, username, email, password, created_at, updated_at FROM users WHERE email = ?"
 	row := m.db.QueryRow(query, user.Email)
-	
+
 	if err := row.Scan(
-			&user.Id, 
-			&user.FullName, 
-			&user.Username, 
-			&user.Email, 
-			&user.Password, 
-			&user.CreatedAt, 
-			&user.UpdatedAt,
-		); err != nil {
+		&user.Id,
+		&user.FullName,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -58,17 +58,17 @@ func (m *mySQLUserRepository) GetById(id int) (*domain.User, error) {
 	row := m.db.QueryRow(query, id)
 
 	var user domain.User
-	
+
 	if err := row.Scan(
-			&user.Id, 
-			&user.FullName, 
-			&user.Username, 
-			&user.Email, 
-			&user.Password, 
-			&user.CreatedAt, 
-			&user.UpdatedAt,
+		&user.Id,
+		&user.FullName,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	); err != nil {
-		return  nil, err
+		return nil, err
 	}
 
 	return &user, nil
@@ -81,15 +81,15 @@ func (m *mySQLUserRepository) FindByEmailOrUsername(email, username string) (*do
 	var user domain.User
 
 	if err := row.Scan(
-			&user.Id, 
-			&user.FullName, 
-			&user.Username, 
-			&user.Email, 
-			&user.Password, 
-			&user.CreatedAt, 
-			&user.UpdatedAt,
+		&user.Id,
+		&user.FullName,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	); err != nil {
-		return  nil, err
+		return nil, err
 	}
 
 	return &user, nil
@@ -122,7 +122,7 @@ func (m *mySQLUserRepository) Update(user *domain.User, ctx context.Context) err
 	}
 
 	return nil
-} 
+}
 
 func (m *mySQLUserRepository) SaveOTP(email, otp string, expiresAt time.Time, ctx context.Context) error {
 	query := "INSERT INTO password_resets (email, otp, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE otp = ?, expires_at = ?"
@@ -138,9 +138,9 @@ func (m *mySQLUserRepository) FindOTP(email string, ctx context.Context) (string
 	query := "SELECT otp, expires_at FROM password_resets WHERE email = ?"
 	row := m.db.QueryRow(query, email)
 
-	var otp string 
+	var otp string
 	var expires time.Time
-	
+
 	if err := row.Scan(
 		&otp,
 		&expires,
@@ -149,4 +149,10 @@ func (m *mySQLUserRepository) FindOTP(email string, ctx context.Context) (string
 	}
 
 	return otp, expires, nil
+}
+
+func (m *mySQLUserRepository) DeleteOTP(email string, ctx context.Context) error {
+	query := "DELETE FROM password_resets WHERE email = ?"
+	_, err := m.db.Exec(query, email)
+	return err
 }

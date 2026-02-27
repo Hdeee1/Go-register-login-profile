@@ -6,32 +6,32 @@ import (
 )
 
 type User struct {
-	Id			int			`json:"id" `
-	FullName	string		`json:"full_name"`
-	Username	string		`json:"username"`
-	Email		string		`json:"email"`
-	Password	string		`json:"password"`
-	CreatedAt	time.Time	`json:"created_at" `
-	UpdatedAt	time.Time	`json:"updated_at" `
+	Id        int       `json:"id" `
+	FullName  string    `json:"full_name"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	CreatedAt time.Time `json:"created_at" `
+	UpdatedAt time.Time `json:"updated_at" `
 }
 
 type RegisterRequest struct {
-	FullName	string `json:"full_name" binding:"required"`
-	Username	string `json:"username" binding:"required,min=3"`
-	Email		string `json:"email" binding:"required,email"`
-	Password 	string `json:"password" binding:"required,min=8"`
+	FullName string `json:"full_name" binding:"required"`
+	Username string `json:"username" binding:"required,min=3"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
 }
 
 type LoginRequest struct {
-	Email		 string `json:"email" binding:"required,email"`
-	Password	 string `json:"password" binding:"required,min=8"`
+	Email        string `json:"email" binding:"required,email"`
+	Password     string `json:"password" binding:"required,min=8"`
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
 type UpdateProfileRequest struct {
-	Username	string	`json:"username"`
-	Password	string	`json:"password"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type RefreshTokenRequest struct {
@@ -39,13 +39,13 @@ type RefreshTokenRequest struct {
 }
 
 type ForgotPasswordRequest struct {
-	Email	string	`json:"email" binding:"required,email"`
+	Email string `json:"email" binding:"required,email"`
 }
 
 type ResetPasswordRequest struct {
-	Email		string	`json:"email" binding:"required,email"`
-	OTP			string	`json:"otp_code" binding:"required"`
-	NewPassword	string	`json:"new_password" binding:"required,min=8"`
+	Email       string `json:"email" binding:"required,email"`
+	OTP         string `json:"otp_code" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=8"`
 }
 
 type UserRepository interface {
@@ -56,6 +56,7 @@ type UserRepository interface {
 	Update(user *User, ctx context.Context) error
 	SaveOTP(email, otp string, expiresAt time.Time, ctx context.Context) error
 	FindOTP(email string, ctx context.Context) (string, time.Time, error)
+	DeleteOTP(email string, ctx context.Context) error
 }
 
 type UserUsecase interface {
