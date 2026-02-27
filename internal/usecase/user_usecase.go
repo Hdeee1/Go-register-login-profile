@@ -164,7 +164,7 @@ func (u *userUsecase) ForgotPassword(input domain.ForgotPasswordRequest, ctx con
 		return err
 	}
 
-	fmt.Println("otp for", input.Email, "is", otp)
+	fmt.Println("The OTP code for", input.Email, "is", otp)
 	return nil
 }
 
@@ -175,11 +175,11 @@ func (u *userUsecase) ResetPassword(input domain.ResetPasswordRequest, ctx conte
 	}
 
 	if otp != input.OTP {
-		return errors.New("invalid otp code")
+		return errors.New("The OTP code is invalid")
 	}
 
 	if time.Now().After(exp) {
-		return errors.New("token has been expired")
+		return errors.New("The OTP has been expired")
 	}
 
 	var user domain.User

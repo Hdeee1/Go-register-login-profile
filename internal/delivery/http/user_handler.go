@@ -195,7 +195,7 @@ func (h *UserHandler) ForgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("otp code has been send to your email", nil))
+	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("The OTP code has been sent to your email", nil))
 }
 
 func (h *UserHandler) ResetPassword(ctx *gin.Context) {
@@ -209,5 +209,5 @@ func (h *UserHandler) ResetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, response.BuildErrorResponse("BAD_REQUEST", err.Error()))
 		return
 	}
-	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("password has been changed", nil))
+	ctx.JSON(http.StatusOK, response.BuildSuccessResponse("The password has been changed", nil))
 }
